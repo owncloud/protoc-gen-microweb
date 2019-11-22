@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "proto";
+import "google/api/annotations.proto";
+
+service Greeter {
+	rpc Say(SayRequest) returns (SayResponse) {
+		option (google.api.http) = {
+			post: "/api/say"
+			body: "*"
+		};
+	}
+}
+
+message SayRequest {
+	string name = 1;
+}
+
+message SayResponse {
+	string message = 1;
+	string err = 2;
+}
