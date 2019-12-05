@@ -131,13 +131,12 @@ import (
 	"github.com/micro/go-micro/web"
 	"github.com/go-chi/render"
 	"github.com/go-chi/chi"
-	"github.com/micro/go-micro/client"
 )
 
 {{ range $idx, $svc := .Services }}
 type web{{ $svc.Name }}Handler struct {
 	m *chi.Mux
-	s {{ $svc.Name }}Service
+	h {{ $svc.Name }}Handler
 }
 
 func (h *web{{ $svc.Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -146,19 +145,23 @@ func (h *web{{ $svc.Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Req
 
 {{ range .Methods }}
 func (h *web{{ $svc.Name }}Handler) {{ name . }}(w http.ResponseWriter, r *http.Request) {
-	data := &{{ .Input.Name }}{}
+	req := &{{ .Input.Name }}{}
+	{{ if ne .Output.Name "Empty" -}}
+	resp := &{{ .Output.Name }}{}
+	{{- end }}
 
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusPreconditionFailed)
 		return
 	}
 
-	resp, err := h.s.{{ name . }}(
+	if err := h.h.{{ name . }}(
 		context.Background(),
-		data,
-	)
-
-	if err != nil {
+		req,
+		{{ if ne .Output.Name "Empty" -}}
+		resp,
+		{{- end }}
+	); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -185,20 +188,19 @@ func (h *web{{ $svc.Name }}Handler) {{ name . }}(w http.ResponseWriter, r *http.
 	render.JSON(w, r, resp)
 	{{- end }}
 	{{- else }}
-	_ = resp
 	render.Status(r, http.StatusNoContent)
 	render.NoContent(w, r)
 	{{- end }}
 }
 {{ end }}
 
-func Register{{ .Name }}Web(svc web.Service, name string, c client.Client, middlewares ...func(http.Handler) http.Handler) {
+func Register{{ .Name }}Web(svc web.Service, i {{ .Name }}Handler, middlewares ...func(http.Handler) http.Handler) {
 	m := chi.NewMux()
 	m.Use(middlewares...)
 
 	handler := &web{{ .Name }}Handler{
 		m: m,
-		s: New{{ $svc.Name }}Service(name, c) ,
+		h: i,
 	}
 
 	{{ range .Methods }}{{ if .ServerStreaming }}{{- else -}}
