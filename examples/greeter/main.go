@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"sync"
 
 	"github.com/go-chi/chi"
 	"github.com/micro/go-micro"
@@ -10,19 +13,21 @@ import (
 )
 
 func main() {
+	var wg sync.WaitGroup
+	wg.Add(2)
+
 	grpc := micro.NewService(
 		micro.Name("go.micro.api.hello"),
 	)
 
 	proto.RegisterGreeterHandler(
 		grpc.Server(),
-		&proto.Greeter{},
+		&Greeter{},
 	)
 
 	go func(svc micro.Service) {
-		if err := svc.Init(); err != nil {
-			log.Fatal(err)
-		}
+		defer wg.Done()
+		svc.Init()
 
 		if err := svc.Run(); err != nil {
 			log.Fatal(err)
@@ -38,17 +43,31 @@ func main() {
 	mux.Route("/", func(r chi.Router) {
 		proto.RegisterGreeterWeb(
 			r,
-			&proto.Greeter{},
+			&Greeter{},
 		)
 	})
 
 	go func(svc web.Service) {
-		if err := svc.Init(); err != nil {
-			log.Fatal(err)
-		}
+		defer wg.Done()
+		svc.Init()
 
 		if err := svc.Run(); err != nil {
 			log.Fatal(err)
 		}
 	}(http)
+
+	wg.Wait()
+}
+
+type Greeter struct{}
+
+func (g *Greeter) Say(ctx context.Context, in *proto.SayRequest, out *proto.SayResponse) error {
+	name := "World"
+
+	if in.Name != "" {
+		name = in.Name
+	}
+
+	out.Message = fmt.Sprintf("Hello %s!", name)
+	return nil
 }
