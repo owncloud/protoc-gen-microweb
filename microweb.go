@@ -128,19 +128,18 @@ import (
 	"net/http"
 
 	"github.com/golang/protobuf/jsonpb"
-	"github.com/micro/go-micro/web"
 	"github.com/go-chi/render"
 	"github.com/go-chi/chi"
 )
 
 {{ range $idx, $svc := .Services }}
 type web{{ $svc.Name }}Handler struct {
-	m *chi.Mux
+	r chi.Router
 	h {{ $svc.Name }}Handler
 }
 
 func (h *web{{ $svc.Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.m.ServeHTTP(w, r)
+	h.r.ServeHTTP(w, r)
 }
 
 {{ range .Methods }}
@@ -194,19 +193,15 @@ func (h *web{{ $svc.Name }}Handler) {{ name . }}(w http.ResponseWriter, r *http.
 }
 {{ end }}
 
-func Register{{ .Name }}Web(svc web.Service, i {{ .Name }}Handler, middlewares ...func(http.Handler) http.Handler) {
-	m := chi.NewMux()
-	m.Use(middlewares...)
-
+func Register{{ .Name }}Web(r chi.Router, i {{ .Name }}Handler, middlewares ...func(http.Handler) http.Handler) {
 	handler := &web{{ .Name }}Handler{
-		m: m,
+		r: r,
 		h: i,
 	}
 
 	{{ range .Methods }}{{ if .ServerStreaming }}{{- else -}}
-	m.MethodFunc("{{ handlerMethod . }}", "{{ handlerPrefix . }}{{ handlerPattern . }}", handler.{{ name .}})
+	r.MethodFunc("{{ handlerMethod . }}", "{{ handlerPrefix . }}{{ handlerPattern . }}", handler.{{ name .}})
 	{{ end }}{{- end -}}
-	svc.Handle("/", handler)
 }
 
 {{ end }}

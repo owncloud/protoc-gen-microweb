@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/go-chi/chi"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/web"
 	"github.com/webhippie/protoc-gen-microweb/examples/greeter/proto"
@@ -32,11 +33,14 @@ func main() {
 		web.Name("go.micro.web.hello"),
 	)
 
-	proto.RegisterGreeterWeb(
-		http,
-		grpc.Name(),
-		grpc.Client(),
-	)
+	mux := chi.NewMux()
+
+	mux.Route("/", func(r chi.Router) {
+		proto.RegisterGreeterWeb(
+			r,
+			&proto.Greeter{},
+		)
+	})
 
 	go func(svc web.Service) {
 		if err := svc.Init(); err != nil {

@@ -12,33 +12,31 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/golang/protobuf/jsonpb"
-	"github.com/micro/go-micro/client"
-	"github.com/micro/go-micro/web"
 )
 
 type webGreeterHandler struct {
-	m *chi.Mux
-	s GreeterService
+	r chi.Router
+	h GreeterHandler
 }
 
 func (h *webGreeterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.m.ServeHTTP(w, r)
+	h.r.ServeHTTP(w, r)
 }
 
 func (h *webGreeterHandler) Say(w http.ResponseWriter, r *http.Request) {
-	data := &SayRequest{}
+	req := &SayRequest{}
+	resp := &SayResponse{}
 
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusPreconditionFailed)
 		return
 	}
 
-	resp, err := h.s.Say(
+	if err := h.h.Say(
 		context.Background(),
-		data,
-	)
-
-	if err != nil {
+		req,
+		resp,
+	); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -47,17 +45,13 @@ func (h *webGreeterHandler) Say(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, resp)
 }
 
-func RegisterGreeterWeb(svc web.Service, name string, c client.Client, middlewares ...func(http.Handler) http.Handler) {
-	m := chi.NewMux()
-	m.Use(middlewares...)
-
+func RegisterGreeterWeb(r chi.Router, i GreeterHandler, middlewares ...func(http.Handler) http.Handler) {
 	handler := &webGreeterHandler{
-		m: m,
-		s: NewGreeterService(name, c),
+		r: r,
+		h: i,
 	}
 
-	m.MethodFunc("POST", "/api/say", handler.Say)
-	svc.Handle("/", handler)
+	r.MethodFunc("POST", "/api/say", handler.Say)
 }
 
 // SayRequestJSONMarshaler describes the default jsonpb.Marshaler used by all
