@@ -12,6 +12,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/golang/protobuf/jsonpb"
+
+	"github.com/golang/protobuf/ptypes/empty"
 )
 
 type webGreeterHandler struct {
@@ -24,7 +26,9 @@ func (h *webGreeterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *webGreeterHandler) Say(w http.ResponseWriter, r *http.Request) {
+
 	req := &SayRequest{}
+
 	resp := &SayResponse{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -45,6 +49,24 @@ func (h *webGreeterHandler) Say(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, resp)
 }
 
+func (h *webGreeterHandler) SayAnything(w http.ResponseWriter, r *http.Request) {
+	req := &empty.Empty{}
+
+	resp := &SayResponse{}
+
+	if err := h.h.SayAnything(
+		context.Background(),
+		req,
+		resp,
+	); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	render.Status(r, http.StatusCreated)
+	render.JSON(w, r, resp)
+}
+
 func RegisterGreeterWeb(r chi.Router, i GreeterHandler, middlewares ...func(http.Handler) http.Handler) {
 	handler := &webGreeterHandler{
 		r: r,
@@ -52,6 +74,7 @@ func RegisterGreeterWeb(r chi.Router, i GreeterHandler, middlewares ...func(http
 	}
 
 	r.MethodFunc("POST", "/api/say", handler.Say)
+	r.MethodFunc("POST", "/api/anything", handler.SayAnything)
 }
 
 // SayRequestJSONMarshaler describes the default jsonpb.Marshaler used by all
