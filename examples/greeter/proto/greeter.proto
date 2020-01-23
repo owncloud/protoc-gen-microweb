@@ -2,11 +2,18 @@ syntax = "proto3";
 
 option go_package = "proto";
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 service Greeter {
 	rpc Say(SayRequest) returns (SayResponse) {
 		option (google.api.http) = {
 			post: "/api/say"
+			body: "*"
+		};
+	}
+	rpc SayAnything(google.protobuf.Empty) returns (SayResponse) {
+		option (google.api.http) = {
+			post: "/api/anything"
 			body: "*"
 		};
 	}

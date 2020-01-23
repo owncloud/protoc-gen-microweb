@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/golang/protobuf/ptypes/empty"
 	"log"
 	"sync"
 
@@ -69,5 +70,10 @@ func (g *Greeter) Say(ctx context.Context, in *proto.SayRequest, out *proto.SayR
 	}
 
 	out.Message = fmt.Sprintf("Hello %s!", name)
+	return nil
+}
+
+func (g *Greeter) SayAnything(ctx context.Context, in *empty.Empty, out *proto.SayResponse) error {
+	out.Message = "Saying Anything!"
 	return nil
 }
