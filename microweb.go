@@ -4,8 +4,8 @@ import (
 	"text/template"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/lyft/protoc-gen-star"
-	"github.com/lyft/protoc-gen-star/lang/go"
+	pgs "github.com/lyft/protoc-gen-star"
+	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 	"google.golang.org/genproto/googleapis/api/annotations"
 )
 
@@ -182,10 +182,10 @@ func (h *web{{ $svc.Name }}Handler) {{ name . }}(w http.ResponseWriter, r *http.
 	{{- end }}
 
 	{{ if ne .Input.Name "Empty" -}}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusPreconditionFailed)
-		return
-	}
+	// if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		//http.Error(w, err.Error(), http.StatusPreconditionFailed)
+		//return
+	//}
 	{{- end }}
 
 	if err := h.h.{{ name . }}(
