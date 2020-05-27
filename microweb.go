@@ -146,7 +146,6 @@ package {{ package . }}
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -189,7 +188,7 @@ func (h *web{{ $svc.Name }}Handler) {{ name . }}(w http.ResponseWriter, r *http.
 	{{- end }}
 
 	if err := h.h.{{ name . }}(
-		context.Background(),
+		r.Context(),
 		req,
 		resp,
 	); err != nil {
