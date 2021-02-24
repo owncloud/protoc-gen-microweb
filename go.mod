@@ -1,4 +1,4 @@
-module github.com/webhippie/protoc-gen-microweb
+module github.com/owncloud/protoc-gen-microweb
 
 go 1.13
 
