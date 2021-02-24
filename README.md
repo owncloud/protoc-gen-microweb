@@ -8,7 +8,7 @@ TBD
 GO111MODULE=off go get -d github.com/grpc-ecosystem/grpc-gateway/...
 GO111MODULE=off go get -v github.com/golang/protobuf/protoc-gen-go
 GO111MODULE=off go get -v github.com/micro/protoc-gen-micro
-GO111MODULE=off go get -v github.com/webhippie/protoc-gen-microweb
+GO111MODULE=off go get -v github.com/owncloud/protoc-gen-microweb
 
 protoc \
 	-I=/usr/local/include/ \
@@ -23,7 +23,7 @@ protoc \
 ## Install
 
 ```
-GO111MODULE=off go get -v github.com/webhippie/protoc-gen-microweb
+GO111MODULE=off go get -v github.com/owncloud/protoc-gen-microweb
 ```
 
 ## Development
@@ -31,15 +31,15 @@ GO111MODULE=off go get -v github.com/webhippie/protoc-gen-microweb
 Make sure you have a working Go environment, for further reference or a guide take a look at the [install instructions](http://golang.org/doc/install.html). This project requires Go >= v1.12.
 
 ```bash
-go get -d github.com/webhippie/protoc-gen-microweb
-cd $GOPATH/src/github.com/webhippie/protoc-gen-microweb
+go get -d github.com/owncloud/protoc-gen-microweb
+cd $GOPATH/src/github.com/owncloud/protoc-gen-microweb
 
 go install
 ```
 
 ## Security
 
-If you find a security issue please contact thomas@webhippie.de first.
+If you find a security issue please contact security@owncloud.com first.
 
 ## Contributing
 
@@ -56,5 +56,5 @@ Apache-2.0
 ## Copyright
 
 ```
-Copyright (c) 2019 Thomas Boerger <http://www.webhippie.de>
+Copyright (c) 2021 ownCloud GmbH <https://owncloud.com>
 ```
