@@ -151,7 +151,7 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/go-chi/render"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	{{ range $imports }}
 		"{{ . }}"
 	{{- end }}
