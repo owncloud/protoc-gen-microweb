@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/web"
 	"github.com/owncloud/protoc-gen-microweb/examples/greeter/proto"
