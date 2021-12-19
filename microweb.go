@@ -61,8 +61,23 @@ func (p *MicroWebModule) Name() string {
 }
 
 func (p *MicroWebModule) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Package) []pgs.Artifact {
+	ignored_packages := map[string]bool{}
+
+	params := p.ctx.Params()
+	if value, ok := params["ignore_packages"]; ok {
+		for _, ignored_pkg := range strings.Split(value, ";") {
+			ignored_packages[ignored_pkg] = true
+		}
+	}
+
 	for _, t := range targets {
-		p.generate(t)
+		packageName := t.Package().ProtoName().String()
+		fileName := t.Name().String()
+		if !ignored_packages[packageName] {
+			p.generate(t)
+		} else {
+			p.Debugf("Ignoring filename %s because it belongs to the ignored package %s", fileName, packageName)
+		}
 	}
 
 	return p.Artifacts()
