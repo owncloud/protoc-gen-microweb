@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/golang/protobuf/ptypes/empty"
 	"log"
 	"sync"
 
-	"github.com/go-chi/chi"
+	"github.com/golang/protobuf/ptypes/empty"
+
+	"github.com/go-chi/chi/v5"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/web"
-	"github.com/webhippie/protoc-gen-microweb/examples/greeter/proto"
+	"github.com/owncloud/protoc-gen-microweb/examples/greeter/proto"
 )
 
 func main() {
