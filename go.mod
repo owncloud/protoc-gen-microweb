@@ -1,14 +1,20 @@
 module github.com/owncloud/protoc-gen-microweb
 
-go 1.13
+go 1.17
 
 require (
-	github.com/go-chi/chi/v5 v5.0.3
-	github.com/go-chi/render v1.0.1
-	github.com/golang/protobuf v1.3.2
-	github.com/lyft/protoc-gen-star v0.4.12
-	github.com/micro/go-micro v1.18.0
-	github.com/spf13/afero v1.2.2 // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
-	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11
+	github.com/golang/protobuf v1.5.2
+	github.com/lyft/protoc-gen-star v0.6.0
+	google.golang.org/genproto v0.0.0-20220405205423-9d709892a2bf
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/spf13/afero v1.8.2 // indirect
+	github.com/stretchr/objx v0.1.0 // indirect
+	github.com/stretchr/testify v1.7.1 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/protobuf v1.28.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
