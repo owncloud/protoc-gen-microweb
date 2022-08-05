@@ -199,6 +199,7 @@ import (
 	{{ if gt (len .Services) 0 -}}
 	"github.com/go-chi/render"
 	"github.com/go-chi/chi/v5"
+	merrors "go-micro.dev/v4/errors"
 	{{- end }}
 	{{ range $key, $value := $imports }}
 		{{ $value }} "{{ $key }}"
@@ -240,7 +241,11 @@ func (h *web{{ $svc.Name }}Handler) {{ name . }}(w http.ResponseWriter, r *http.
 		req,
 		resp,
 	); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		if merr,ok := merrors.As(err); ok && merr.Code == http.StatusNotFound {
+		    http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
+		    http.Error(w, err.Error(), http.StatusBadRequest)
+		}
 		return
 	}
 
