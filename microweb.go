@@ -4,10 +4,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/protobuf/proto"
-	pgs "github.com/lyft/protoc-gen-star"
-	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
+	pgs "github.com/lyft/protoc-gen-star/v2"
+	pgsgo "github.com/lyft/protoc-gen-star/v2/lang/go"
 	"google.golang.org/genproto/googleapis/api/annotations"
+	"google.golang.org/protobuf/proto"
 )
 
 type handler struct {
@@ -85,7 +85,7 @@ func (p *MicroWebModule) Execute(targets map[string]pgs.File, pkgs map[string]pg
 
 func getHandler(m pgs.Method) *handler {
 	opts := m.Descriptor().GetOptions()
-	pext, _ := proto.GetExtension(opts, annotations.E_Http)
+	pext := proto.GetExtension(opts, annotations.E_Http)
 	ext, ok := pext.(*annotations.HttpRule)
 
 	if !ok {
