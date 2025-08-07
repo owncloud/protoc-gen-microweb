@@ -4,10 +4,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/protobuf/proto"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 	"google.golang.org/genproto/googleapis/api/annotations"
+	"google.golang.org/protobuf/proto"
 )
 
 type handler struct {
@@ -85,7 +85,7 @@ func (p *MicroWebModule) Execute(targets map[string]pgs.File, pkgs map[string]pg
 
 func getHandler(m pgs.Method) *handler {
 	opts := m.Descriptor().GetOptions()
-	pext, _ := proto.GetExtension(opts, annotations.E_Http)
+	pext := proto.GetExtension(opts, annotations.E_Http)
 	ext, ok := pext.(*annotations.HttpRule)
 
 	if !ok {
@@ -189,13 +189,12 @@ package {{ package . }}
 {{ end }}
 
 import (
-	"bytes"
 	"encoding/json"
 	{{ if gt (len .Services) 0 -}}
 	"net/http"
 	{{- end }}
 
-	"github.com/golang/protobuf/jsonpb"
+	"google.golang.org/protobuf/encoding/protojson"
 	{{ if gt (len .Services) 0 -}}
 	"github.com/go-chi/render"
 	"github.com/go-chi/chi/v5"
@@ -292,38 +291,32 @@ func Register{{ .Name }}Web(r chi.Router, i {{ .Name }}Handler, middlewares ...f
 
 {{ range .AllMessages }}
 
-// {{ marshaler . }} describes the default jsonpb.Marshaler used by all
+// {{ marshaler . }} describes the default protojson.Marshaler used by all
 // instances of {{ name . }}. This struct is safe to replace or modify but
 // should not be done so concurrently.
-var {{ marshaler . }} = new(jsonpb.Marshaler)
+var {{ marshaler . }} = protojson.MarshalOptions{}
 
 // MarshalJSON satisfies the encoding/json Marshaler interface. This method
-// uses the more correct jsonpb package to correctly marshal the message.
+// uses the more correct protojson package to correctly marshal the message.
 func (m *{{ name . }}) MarshalJSON() ([]byte, error) {
 	if m == nil {
 		return json.Marshal(nil)
 	}
 
-	buf := &bytes.Buffer{}
-
-	if err := {{ marshaler . }}.Marshal(buf, m); err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
+	return {{ marshaler . }}.Marshal(m)
 }
 
 var _ json.Marshaler = (*{{ name . }})(nil)
 
-// {{ unmarshaler . }} describes the default jsonpb.Unmarshaler used by all
+// {{ unmarshaler . }} describes the default protojson.Unmarshaler used by all
 // instances of {{ name . }}. This struct is safe to replace or modify but
 // should not be done so concurrently.
-var {{ unmarshaler . }} = new(jsonpb.Unmarshaler)
+var {{ unmarshaler . }} = protojson.UnmarshalOptions{}
 
 // UnmarshalJSON satisfies the encoding/json Unmarshaler interface. This method
-// uses the more correct jsonpb package to correctly unmarshal the message.
+// uses the more correct protojson package to correctly unmarshal the message.
 func (m *{{ name . }}) UnmarshalJSON(b []byte) error {
-	return {{ unmarshaler . }}.Unmarshal(bytes.NewReader(b), m)
+	return {{ unmarshaler . }}.Unmarshal(b, m)
 }
 
 var _ json.Unmarshaler = (*{{ name . }})(nil)
