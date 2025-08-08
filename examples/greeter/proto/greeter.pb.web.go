@@ -4,16 +4,15 @@
 package proto
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
-	"github.com/golang/protobuf/jsonpb"
+	merrors "go-micro.dev/v4/errors"
+	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/golang/protobuf/ptypes/empty"
+	ptypesempty "github.com/golang/protobuf/ptypes/empty"
 )
 
 type webGreeterHandler struct {
@@ -26,9 +25,7 @@ func (h *webGreeterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *webGreeterHandler) Say(w http.ResponseWriter, r *http.Request) {
-
 	req := &SayRequest{}
-
 	resp := &SayResponse{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -37,11 +34,15 @@ func (h *webGreeterHandler) Say(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.h.Say(
-		context.Background(),
+		r.Context(),
 		req,
 		resp,
 	); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		if merr, ok := merrors.As(err); ok && merr.Code == http.StatusNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
 		return
 	}
 
@@ -50,16 +51,19 @@ func (h *webGreeterHandler) Say(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *webGreeterHandler) SayAnything(w http.ResponseWriter, r *http.Request) {
-	req := &empty.Empty{}
-
+	req := &ptypesempty.Empty{}
 	resp := &SayResponse{}
 
 	if err := h.h.SayAnything(
-		context.Background(),
+		r.Context(),
 		req,
 		resp,
 	); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		if merr, ok := merrors.As(err); ok && merr.Code == http.StatusNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
 		return
 	}
 
@@ -77,74 +81,62 @@ func RegisterGreeterWeb(r chi.Router, i GreeterHandler, middlewares ...func(http
 	r.MethodFunc("POST", "/api/anything", handler.SayAnything)
 }
 
-// SayRequestJSONMarshaler describes the default jsonpb.Marshaler used by all
+// SayRequestJSONMarshaler describes the default protojson.Marshaler used by all
 // instances of SayRequest. This struct is safe to replace or modify but
 // should not be done so concurrently.
-var SayRequestJSONMarshaler = new(jsonpb.Marshaler)
+var SayRequestJSONMarshaler = protojson.MarshalOptions{}
 
 // MarshalJSON satisfies the encoding/json Marshaler interface. This method
-// uses the more correct jsonpb package to correctly marshal the message.
+// uses the more correct protojson package to correctly marshal the message.
 func (m *SayRequest) MarshalJSON() ([]byte, error) {
 	if m == nil {
 		return json.Marshal(nil)
 	}
 
-	buf := &bytes.Buffer{}
-
-	if err := SayRequestJSONMarshaler.Marshal(buf, m); err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
+	return SayRequestJSONMarshaler.Marshal(m)
 }
 
 var _ json.Marshaler = (*SayRequest)(nil)
 
-// SayRequestJSONUnmarshaler describes the default jsonpb.Unmarshaler used by all
+// SayRequestJSONUnmarshaler describes the default protojson.Unmarshaler used by all
 // instances of SayRequest. This struct is safe to replace or modify but
 // should not be done so concurrently.
-var SayRequestJSONUnmarshaler = new(jsonpb.Unmarshaler)
+var SayRequestJSONUnmarshaler = protojson.UnmarshalOptions{}
 
 // UnmarshalJSON satisfies the encoding/json Unmarshaler interface. This method
-// uses the more correct jsonpb package to correctly unmarshal the message.
+// uses the more correct protojson package to correctly unmarshal the message.
 func (m *SayRequest) UnmarshalJSON(b []byte) error {
-	return SayRequestJSONUnmarshaler.Unmarshal(bytes.NewReader(b), m)
+	return SayRequestJSONUnmarshaler.Unmarshal(b, m)
 }
 
 var _ json.Unmarshaler = (*SayRequest)(nil)
 
-// SayResponseJSONMarshaler describes the default jsonpb.Marshaler used by all
+// SayResponseJSONMarshaler describes the default protojson.Marshaler used by all
 // instances of SayResponse. This struct is safe to replace or modify but
 // should not be done so concurrently.
-var SayResponseJSONMarshaler = new(jsonpb.Marshaler)
+var SayResponseJSONMarshaler = protojson.MarshalOptions{}
 
 // MarshalJSON satisfies the encoding/json Marshaler interface. This method
-// uses the more correct jsonpb package to correctly marshal the message.
+// uses the more correct protojson package to correctly marshal the message.
 func (m *SayResponse) MarshalJSON() ([]byte, error) {
 	if m == nil {
 		return json.Marshal(nil)
 	}
 
-	buf := &bytes.Buffer{}
-
-	if err := SayResponseJSONMarshaler.Marshal(buf, m); err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
+	return SayResponseJSONMarshaler.Marshal(m)
 }
 
 var _ json.Marshaler = (*SayResponse)(nil)
 
-// SayResponseJSONUnmarshaler describes the default jsonpb.Unmarshaler used by all
+// SayResponseJSONUnmarshaler describes the default protojson.Unmarshaler used by all
 // instances of SayResponse. This struct is safe to replace or modify but
 // should not be done so concurrently.
-var SayResponseJSONUnmarshaler = new(jsonpb.Unmarshaler)
+var SayResponseJSONUnmarshaler = protojson.UnmarshalOptions{}
 
 // UnmarshalJSON satisfies the encoding/json Unmarshaler interface. This method
-// uses the more correct jsonpb package to correctly unmarshal the message.
+// uses the more correct protojson package to correctly unmarshal the message.
 func (m *SayResponse) UnmarshalJSON(b []byte) error {
-	return SayResponseJSONUnmarshaler.Unmarshal(bytes.NewReader(b), m)
+	return SayResponseJSONUnmarshaler.Unmarshal(b, m)
 }
 
 var _ json.Unmarshaler = (*SayResponse)(nil)

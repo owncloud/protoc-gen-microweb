@@ -113,8 +113,19 @@ func (p *MicroWebModule) generate(f pgs.File) {
 		return
 	}
 
-	name := p.ctx.OutputPath(f).SetExt(".web.go")
-	p.AddGeneratorTemplateFile(name.String(), p.tpl, f)
+	// Check if module option is set
+	params := p.ctx.Params()
+	if _, ok := params["module"]; ok {
+		// Use module option to generate files directly in the output directory
+		// Extract the filename and set extension with .pb. prefix
+		fileName := f.Name().String()
+		name := pgs.FilePath(fileName).SetExt(".pb.web.go")
+		p.AddGeneratorTemplateFile(name.String(), p.tpl, f)
+	} else {
+		// Use default behavior
+		name := p.ctx.OutputPath(f).SetExt(".web.go")
+		p.AddGeneratorTemplateFile(name.String(), p.tpl, f)
+	}
 }
 
 func (p *MicroWebModule) handlerMethod(m pgs.Method) pgs.Name {
