@@ -1,0 +1,40 @@
+name: Test
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+    
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install protobuf compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Go (with module and build cache)
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Cache googleapis repo
+        uses: actions/cache@v4
+        with:
+          path: googleapis
+          key: ${{ runner.os }}-googleapis-cache
+          restore-keys: |
+            ${{ runner.os }}-googleapis-
+      - name: Prepare googleapis path
+        run: |
+          if [ -d googleapis ]; then
+            echo "Using cached googleapis"
+          else
+            git clone --depth 1 https://github.com/googleapis/googleapis.git googleapis
+          fi
+          sudo rm -rf /tmp/googleapis || true
+          ln -s "$GITHUB_WORKSPACE/googleapis" /tmp/googleapis
+      - name: Test
+        run: ./test.sh
