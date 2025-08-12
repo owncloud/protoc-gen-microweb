@@ -18,10 +18,10 @@ setup_prerequisites() {
 
   # Install compatible protoc toolchain (pinned)
   echo "Installing compatible protoc-gen-go version..."
-  go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
+  go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.7
   which protoc-gen-go-grpc || (echo "Installing protoc-gen-go-grpc..." && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1)
   which protoc-gen-micro || (echo "Installing protoc-gen-micro..." && go install github.com/go-micro/generator/cmd/protoc-gen-micro@v1.0.0)
-  which protoc-gen-go || (echo "Installing protoc-gen-go..." && go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6)
+  which protoc-gen-go || (echo "Installing protoc-gen-go..." && go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.7)
   export PATH="$PATH:$(go env GOPATH)/bin"
 
   # Build the protoc-gen-microweb tool

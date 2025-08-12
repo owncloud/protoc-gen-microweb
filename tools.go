@@ -8,7 +8,5 @@ package main
 // are not included in normal builds.
 
 import (
-	_ "github.com/go-micro/generator/cmd/protoc-gen-micro"
-	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
 	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
 )
