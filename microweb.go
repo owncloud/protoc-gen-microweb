@@ -51,6 +51,10 @@ func (p *MicroWebModule) InitContext(ctx pgs.BuildContext) {
 	p.eimp = make(map[pgs.FilePath]string)
 	p.pconv = map[pgs.FilePath]pgs.FilePath{
 		"google.golang.org/protobuf/types/known/emptypb": "github.com/golang/protobuf/ptypes/empty",
+		"go-micro.dev/v4/api":                            "github.com/micro/go-micro/v4/api",
+		"go-micro.dev/v4/client":                         "github.com/micro/go-micro/v4/client",
+		"go-micro.dev/v4/server":                         "github.com/micro/go-micro/v4/server",
+		"go-micro.dev/v4/errors":                         "github.com/micro/go-micro/v4/errors",
 	}
 	p.tpl = template.Must(tpl.Parse(microwebTpl))
 }
@@ -113,8 +117,19 @@ func (p *MicroWebModule) generate(f pgs.File) {
 		return
 	}
 
-	name := p.ctx.OutputPath(f).SetExt(".web.go")
-	p.AddGeneratorTemplateFile(name.String(), p.tpl, f)
+	// Check if module option is set
+	params := p.ctx.Params()
+	if _, ok := params["module"]; ok {
+		// Use module option to generate files directly in the output directory
+		// Extract the filename and set extension with .pb. prefix
+		fileName := f.Name().String()
+		name := pgs.FilePath(fileName).SetExt(".pb.web.go")
+		p.AddGeneratorTemplateFile(name.String(), p.tpl, f)
+	} else {
+		// Use default behavior
+		name := p.ctx.OutputPath(f).SetExt(".web.go")
+		p.AddGeneratorTemplateFile(name.String(), p.tpl, f)
+	}
 }
 
 func (p *MicroWebModule) handlerMethod(m pgs.Method) pgs.Name {
