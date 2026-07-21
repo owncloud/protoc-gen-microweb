@@ -7,7 +7,7 @@ toolchain go1.24.0
 require (
 	github.com/lyft/protoc-gen-star v0.6.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20250728155136-f173205681a0
-	google.golang.org/protobuf v1.36.7
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
