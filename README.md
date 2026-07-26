@@ -1,113 +1,108 @@
 # protoc-gen-microweb
 
-Protocol Buffers plugin that generates HTTP web handlers from protobuf service definitions. Converts gRPC HTTP annotations into Chi router handlers with JSON serialization, eliminating manual HTTP boilerplate code. Generates service interfaces, request/response marshaling, and proper error handling for REST APIs built on protobuf schemas.
+<!-- OSPO-managed README | Generated: 2026-04-16 | v2 -->
 
-The three files serve different purposes in a protobuf-based system:
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE) [![ownCloud OSPO](https://img.shields.io/badge/OSPO-ownCloud-blue)](https://kiteworks.com/opensource) [![Docker Hub](https://img.shields.io/docker/pulls/owncloud)](https://hub.docker.com/r/owncloud/ocis)
 
-## `greeter.pb.go` (protoc-gen-go)
-- **Purpose**: Core protobuf message definitions and serialization
-- **Usage**: Base layer for all protobuf operations
+A Protocol Buffers compiler plugin that generates HTTP web handler code from protobuf service definitions. It converts gRPC HTTP annotations into Go Chi router handlers with JSON serialization, producing service interfaces, request/response marshaling, and error handling for REST APIs -- eliminating the boilerplate of manually wiring up protobuf services as HTTP endpoints.
 
-## `greeter.pb.micro.go` (protoc-gen-micro)
-- **Purpose**: Go-micro framework client/server code
-- **Usage**: For microservices using go-micro framework
+## Getting Started
 
-## `greeter.pb.web.go` (protoc-gen-microweb)
-- **Purpose**: HTTP REST API handlers
-- **Usage**: For HTTP APIs that expose protobuf services as REST
+Follow the steps below to install and use the protoc plugin.
 
-## Differences:
-- **Protocol**: `pb.go` = protobuf binary, `micro.go` = micro RPC, `web.go` = HTTP/JSON
-- **Transport**: `pb.go` = none, `micro.go` = micro client/server, `web.go` = Chi HTTP router
-- **Serialization**: `pb.go` = protobuf binary, `micro.go` = protobuf binary, `web.go` = JSON
-- **Use case**: `pb.go` = foundation, `micro.go` = microservices, `web.go` = REST APIs
+### Installation
 
-**The three files work together: `pb.go` provides the data structures, `micro.go` enables microservice communication, and `web.go` exposes HTTP REST endpoints.**
-
-
-## Quick Example
-
-```protobuf
-service Greeter {
-    rpc Say(SayRequest) returns (SayResponse) {
-        option (google.api.http) = {
-            post: "/api/say"
-            body: "*"
-        };
-    }
-}
-```
-
-```go
-// Generated handler interface
-type GreeterHandler interface {
-    Say(ctx context.Context, in *SayRequest, out *SayResponse) error
-}
-
-// Usage
-mux := chi.NewMux()
-proto.RegisterGreeterWeb(mux, &Greeter{})
-```
-
-## Docs
-
-### Run
-
-```
-# Install required tools
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+```bash
 go install github.com/owncloud/protoc-gen-microweb@latest
+```
 
-# Generate Go code from protobuf
+### Usage
+
+```bash
 protoc \
-	--proto_path=$(go env GOPATH)/pkg/mod/github.com/grpc-ecosystem/grpc-gateway@v1.16.0/third_party/googleapis \
-	--proto_path=proto/ \
-	--go_out=proto/ \
-	--go_opt=module=github.com/owncloud/protoc-gen-microweb/examples/greeter/proto \
-	--go-grpc_out=proto/ \
-	--go-grpc_opt=module=github.com/owncloud/protoc-gen-microweb/examples/greeter/proto \
-	--micro_out=proto/ \
-	--micro_opt=module=github.com/owncloud/protoc-gen-microweb/examples/greeter/proto \
-	--microweb_out=proto/ \
-	--microweb_opt=module=github.com/owncloud/protoc-gen-microweb/examples/greeter/proto \
-	proto/greeter.proto
-```
-
-### Install
-
-```
-GO111MODULE=off go get -v github.com/owncloud/protoc-gen-microweb
+    --proto_path=proto/ \
+    --microweb_out=proto/ \
+    --microweb_opt=module=github.com/your/module/proto \
+    proto/your_service.proto
 ```
 
 ### Development
 
-Make sure you have a working Go environment, for further reference or a guide take a look at the [install instructions](http://golang.org/doc/install.html). This project requires Go >= v1.12.
-
 ```bash
 go get -d github.com/owncloud/protoc-gen-microweb
-cd $GOPATH/src/github.com/owncloud/protoc-gen-microweb
-
 go install
 ```
 
-## Security
+### Testing
 
-If you find a security issue please contact security@owncloud.com first.
+```bash
+bash test.sh
+```
+
+## Documentation
+
+- [Protocol Buffers](https://protobuf.dev/)
+- [gRPC HTTP Annotations](https://cloud.google.com/endpoints/docs/grpc/transcoding)
+- [Chi Router](https://github.com/go-chi/chi)
+
+## Part of ownCloud Infinite Scale
+
+This protoc plugin is used in the [oCIS](https://github.com/owncloud/ocis) build pipeline to generate HTTP REST handlers from protobuf service definitions.
+
+This component is part of the [oCIS Docker image](https://hub.docker.com/r/owncloud/ocis).
+
+## Community & Support
+
+**[Star](https://github.com/owncloud/protoc-gen-microweb)** this repo and **Watch** for release notifications!
+
+- [ownCloud Website](https://owncloud.com)
+- [Community Discussions](https://github.com/orgs/owncloud/discussions)
+- [Matrix Chat](https://app.element.io/#/room/#owncloud:matrix.org)
+- [Documentation](https://doc.owncloud.com)
+- [Enterprise Support](https://owncloud.com/contact-us/)
+- [OSPO Home](https://kiteworks.com/opensource)
 
 ## Contributing
 
-Fork -> Patch -> Push -> Pull Request
+We welcome contributions! Please read the [Contributing Guidelines](CONTRIBUTING.md)
+and our [Code of Conduct](CODE_OF_CONDUCT.md) before getting started.
 
-## Authors
+### Workflow
 
-* [Thomas Boerger](https://github.com/tboerger)
+- **Rebase Early, Rebase Often!** We use a rebase workflow. Always rebase on the target branch before submitting a PR.
+- **Dependabot**: Automated dependency updates are managed via Dependabot. Review and merge dependency PRs promptly.
+- **Signed Commits**: All commits **must** be PGP/GPG signed. See [GitHub's signing guide](https://docs.github.com/en/authentication/managing-commit-signature-verification).
+- **DCO Sign-off**: Every commit must carry a `Signed-off-by` line:
+  ```
+  git commit -s -S -m "your commit message"
+  ```
+- **GitHub Actions Policy**: Workflows may only use actions that are (a) owned by `owncloud`, (b) created by GitHub (`actions/*`), or (c) verified in the GitHub Marketplace.
+
+## Security
+
+**Do not open a public GitHub issue for security vulnerabilities.**
+
+Report vulnerabilities at **<https://security.owncloud.com>** -- see [SECURITY.md](SECURITY.md).
+
+Bug bounty: [YesWeHack ownCloud Program](https://yeswehack.com/programs/owncloud-bug-bounty-program)
 
 ## License
 
-Apache-2.0
+This project is licensed under the [Apache-2.0](LICENSE).
 
-## Copyright
+## About the ownCloud OSPO
 
-```
-Copyright (c) 2021 ownCloud GmbH <https://owncloud.com>
-```
+The [Kiteworks Open Source Program Office](https://kiteworks.com/opensource), operating under
+the [ownCloud](https://owncloud.com) brand, launched on May 5, 2026, to steward the open source
+ecosystem around ownCloud's products. The OSPO ensures transparent governance, license compliance,
+community health, and sustainable collaboration between the open source community and
+[Kiteworks](https://www.kiteworks.com), which acquired ownCloud in 2023.
+
+- **OSPO Home**: <https://kiteworks.com/opensource>
+- **GitHub**: <https://github.com/owncloud>
+- **ownCloud**: <https://owncloud.com>
+
+For questions about the OSPO or licensing, contact ospo@kiteworks.com.
+
+> **License status:** This repository is already licensed under Apache-2.0 -- the OSPO target license.
+> No migration is required.
